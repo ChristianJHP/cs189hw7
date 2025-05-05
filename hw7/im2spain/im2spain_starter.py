@@ -77,20 +77,24 @@ def displacement_error(y, y_hat):
         y_hat: Predicted (lat, lon) coords
 
     Returns:
-        Displacement error
+        Displacement error in miles
     """
-    return ...
+
+    lat_diff = y[0] - y_hat[0]
+    lon_diff = y[1] - y_hat[1]
+
+    # Convert latitude and longitude differences to miles
+    lat_miles = lat_diff * 69  # 1 degree latitude = 69 miles
+    lon_miles = lon_diff * 52  # 1 degree longitude = 52 miles
+
+    # Calculate the displacement error (Euclidean distance) in miles
+    displacement = np.sqrt(lat_miles**2 + lon_miles**2)
+
+    return displacement
 
 def grid_search(train_features, train_labels, test_features, test_labels, is_weighted=False, verbose=True):
     """
     Input:
-        train_features: Training set image features
-        train_labels: Training set GPS (lat, lon) coords
-        test_features: Test set image features
-        test_labels: Test set GPS (lat, lon) coords
-        is_weighted: Weight prediction by distances in feature space
-
-    Output:
         Prints mean displacement error as a function of k
         Plots mean displacement error vs k
 
