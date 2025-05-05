@@ -95,6 +95,13 @@ def displacement_error(y, y_hat):
 def grid_search(train_features, train_labels, test_features, test_labels, is_weighted=False, verbose=True):
     """
     Input:
+        train_features: Training set image features
+        train_labels: Training set GPS (lat, lon) coords
+        test_features: Test set image features
+        test_labels: Test set GPS (lat, lon) coords
+        is_weighted: Weight prediction by distances in feature space
+
+    Output:
         Prints mean displacement error as a function of k
         Plots mean displacement error vs k
 
@@ -165,15 +172,34 @@ def main():
     test_image_filename = '53633239060.jpg'
     # Part (b): Use knn to get the 3 nearest neighbors of test image 53633239060.jpg
     ##### TODO(b): Your Code Here #####
-    nn_coords = ...
-    nn_filenames = ...
+    knn = NearestNeighbors(n_neighbors=3)
+    knn.fit(train_features)
+
+    test_image_index = np.where(test_files == test_image_filename)[0][0]
+    test_image_features = test_features[test_image_index]
+
+    # reshape test image features
+    test_image_features = test_image_features.reshape(1, -1)
+
+    # finding nearest neighbor
+    distances, indices = knn.kneighbors(test_image_features)
+
+    nn_coords = train_labels[indices[0]]
+    nn_filenames = train_files[indices[0]]
 
     # Visualize the images
     plot_3nn(test_image_filename, nn_filenames)
 
     # Part (c): establish a naive baseline of predicting the mean of the training set
     ##### TODO(c): Your Code Here #####
-    naive_error = ...
+    centroid = train_labels.mean(axis=0)  # shape: (2,)
+    predicted_coords = np.tile(centroid, (len(test_labels), 1))  # shape: (n_test, 2)
+    # diff
+    deltas = test_labels - predicted_coords
+    distances = np.sqrt((deltas[:, 0] * 69)**2 + (deltas[:, 1] * 52)**2)
+    mde = distances.mean()
+
+    naive_error = mde
 
     print(f'\nNaive baseline mean displacement error (miles: {naive_error:.1f})')
 
